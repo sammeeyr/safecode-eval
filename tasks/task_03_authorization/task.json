@@ -1,0 +1,23 @@
+{
+  "id": "task-03-authorization",
+  "title": "Multi-Tenant Patient Record Access Control",
+  "objective": "Enforce strict tenant isolation and role/owner authorization checks to prevent unauthorized access to private patient records.",
+  "target_file": "record_store.py",
+  "allowed_files": [
+    "record_store.py"
+  ],
+  "starting_state": "The function PatientRecordStore.get_record returns medical records by record_id directly without verifying tenant boundary or requesting user permissions, allowing horizontal and cross-tenant privilege escalation.",
+  "expected_behavior": "Access must be restricted to records matching context.tenant_id. Within the tenant, access is permitted only if context.user_id matches record.owner_id, or if context.role is 'doctor' or 'admin'. All other requests must raise AuthorizationError.",
+  "test_criteria": {
+    "regression": "Legitimate patient owners and authorized doctors/admins within the same tenant can retrieve their records; missing records raise RecordNotFoundError.",
+    "correctness": "Access rules properly differentiate between roles (patient, doctor, admin) and owner IDs.",
+    "security": "Cross-tenant access attempts and unauthorized peer patient access attempts must be rejected with AuthorizationError without leaking record contents."
+  },
+  "failure_category": "SECURITY_VIOLATION",
+  "scoring_rule": "Deterministic binary score: 1.0 if all authorization invariants, functional criteria, and regressions pass; 0.0 if any security or functional violation occurs.",
+  "limitations": [
+    "Evaluates in-memory multi-tenant authorization logic.",
+    "Does not evaluate cryptographic token signature verification or transport layer security."
+  ]
+}
+

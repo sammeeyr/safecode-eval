@@ -1,0 +1,109 @@
+{
+  "benchmark_version": "0.1.0",
+  "notes": [
+    "Evaluated using deterministic, independently authored tests.",
+    "Functional correctness is evaluated separately from security and scope constraints.",
+    "Code compilation or successful parsing alone does not grant a passing score.",
+    "No AI model claim is made for test grading authority.",
+    "Evaluation mode: patch_type='bad'"
+  ],
+  "platform": "win32",
+  "python_version": "3.14.7",
+  "summary": {
+    "correctness_failures": 1,
+    "failed_tasks": 3,
+    "failure_breakdown": {
+      "CORRECTNESS_FAILURE": 1,
+      "NONE": 0,
+      "PARSE_OR_SYNTAX_ERROR": 0,
+      "REGRESSION_FAILURE": 1,
+      "SCOPE_VIOLATION": 0,
+      "SECURITY_VIOLATION": 1,
+      "SPECIFICATION_ERROR": 0,
+      "TIMEOUT_ERROR": 0
+    },
+    "mean_score": 0.0,
+    "pass_rate": 0.0,
+    "passed_tasks": 0,
+    "regression_failures": 1,
+    "scope_violations": 0,
+    "security_violations": 1,
+    "specification_errors": 0,
+    "syntax_errors": 0,
+    "timeout_errors": 0,
+    "total_tasks": 3
+  },
+  "task_results": [
+    {
+      "correctness_passed": false,
+      "error_message": "One or more test suites failed.",
+      "execution_time_seconds": 4.0157,
+      "failure_category": "CORRECTNESS_FAILURE",
+      "limitations": [
+        "Evaluates deterministic integer volumes only.",
+        "Does not evaluate floating point currency rounding rules beyond standard 2-decimal precision.",
+        "Does not test distributed or concurrent calculation."
+      ],
+      "passed": false,
+      "regression_free": true,
+      "scope_preserved": true,
+      "score": 0.0,
+      "security_preserved": true,
+      "task_id": "task-01-correctness",
+      "test_details": {
+        "correctness_passed": false,
+        "exit_code": 1,
+        "output_excerpt": "============================= test session starts =============================\ncollecting ... collected 11 items\n\ntests/test_functional.py::test_reject_negative_volume FAILED             [  9%]\ntests/test_functional.py::test_tier_two_calculation PASSED               [ 18%]\ntests/test_functional.py::test_tier_two_boundary PASSED                  [ 27%]\ntests/test_functional.py::test_tier_three_progressive_calculation FAILED [ 36%]\ntests/test_functional.py::test_high_volume_progressive_calculation FAILED [ 45%]\ntests/test_regression.py::test_zero_volume PASSED                        [ 54%]\ntests/test_regression.py::test_sub_thousand_volume PASSED                [ 63%]\ntests/test_regression.py::test_mid_tier_volume PASSED                    [ 72%]\ntests/test_regression.py::test_tier_one_cap PASSED                       [ 81%]\ntests/test_security.py::test_no_system_modules_imported PASSED           [ 90%]\ntests/test_security.py::test_input_type_robustness PASSED                [100%]\n\n================================== FAILURES ===================================\n_________________________ test_reject_negative_volume _________________________\ntests\\test_functional.py:8: in test_reject_",
+        "regression_passed": true,
+        "security_passed": true
+      }
+    },
+    {
+      "correctness_passed": true,
+      "error_message": "One or more test suites failed.",
+      "execution_time_seconds": 3.2051,
+      "failure_category": "REGRESSION_FAILURE",
+      "limitations": [
+        "Evaluates standard HTTP/HTTPS path components only.",
+        "Does not parse full RFC 3986 URI authority or port components."
+      ],
+      "passed": false,
+      "regression_free": false,
+      "scope_preserved": true,
+      "score": 0.0,
+      "security_preserved": true,
+      "task_id": "task-02-regression",
+      "test_details": {
+        "correctness_passed": true,
+        "exit_code": 1,
+        "output_excerpt": "============================= test session starts =============================\ncollecting ... collected 13 items\n\ntests/test_functional.py::test_query_string_preserved PASSED             [  7%]\ntests/test_functional.py::test_fragment_preserved PASSED                 [ 15%]\ntests/test_functional.py::test_query_and_fragment_combined PASSED        [ 23%]\ntests/test_functional.py::test_multiple_query_params PASSED              [ 30%]\ntests/test_functional.py::test_query_string_with_explicit_version PASSED [ 38%]\ntests/test_regression.py::test_empty_path_defaults_to_version PASSED     [ 46%]\ntests/test_regression.py::test_custom_default_version PASSED             [ 53%]\ntests/test_regression.py::test_explicit_version_preserved PASSED         [ 61%]\ntests/test_regression.py::test_redundant_slashes_collapsed PASSED        [ 69%]\ntests/test_regression.py::test_legacy_aliases_expanded FAILED            [ 76%]\ntests/test_regression.py::test_legacy_alias_with_query_string FAILED     [ 84%]\ntests/test_security.py::test_no_system_modules_imported PASSED           [ 92%]\ntests/test_security.py::test_type_safety_on_invalid_input PASSED         [100%]\n\n================================== FAILURES ",
+        "regression_passed": false,
+        "security_passed": true
+      }
+    },
+    {
+      "correctness_passed": true,
+      "error_message": "One or more test suites failed.",
+      "execution_time_seconds": 3.8243,
+      "failure_category": "SECURITY_VIOLATION",
+      "limitations": [
+        "Evaluates in-memory multi-tenant authorization logic.",
+        "Does not evaluate cryptographic token signature verification or transport layer security."
+      ],
+      "passed": false,
+      "regression_free": true,
+      "scope_preserved": true,
+      "score": 0.0,
+      "security_preserved": false,
+      "task_id": "task-03-authorization",
+      "test_details": {
+        "correctness_passed": true,
+        "exit_code": 1,
+        "output_excerpt": "============================= test session starts =============================\ncollecting ... collected 9 items\n\ntests/test_functional.py::test_doctor_in_same_tenant_can_access PASSED   [ 11%]\ntests/test_functional.py::test_admin_in_same_tenant_can_access PASSED    [ 22%]\ntests/test_regression.py::test_owner_can_retrieve_own_record PASSED      [ 33%]\ntests/test_regression.py::test_missing_record_raises_not_found PASSED    [ 44%]\ntests/test_regression.py::test_invalid_context_raises_type_error PASSED  [ 55%]\ntests/test_security.py::test_peer_patient_cannot_access_other_patient_record FAILED [ 66%]\ntests/test_security.py::test_cross_tenant_access_is_strictly_denied FAILED [ 77%]\ntests/test_security.py::test_cross_tenant_admin_access_is_denied FAILED  [ 88%]\ntests/test_security.py::test_unauthorized_role_denied FAILED             [100%]\n\n================================== FAILURES ===================================\n____________ test_peer_patient_cannot_access_other_patient_record _____________\ntests\\test_security.py:51: in test_peer_patient_cannot_access_other_patient_record\n    with pytest.raises(AuthorizationError):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: DID NOT RA",
+        "regression_passed": true,
+        "security_passed": false
+      }
+    }
+  ],
+  "timestamp": "2026-10-28T15:08:42.878344+00:00"
+}

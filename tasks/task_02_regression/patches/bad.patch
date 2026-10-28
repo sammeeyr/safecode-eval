@@ -1,0 +1,39 @@
+--- a/endpoint_normalizer.py
++++ b/endpoint_normalizer.py
+@@ -23,20 +23,25 @@
+     if not stripped:
+         return f"/{default_version}"
+
+-    # BUG / LIMITATION: Current implementation throws on queries and fragments
+-    if "?" in stripped or "#" in stripped:
+-        raise ValueError("Invalid character in path: query parameters and fragments are not supported")
++    fragment = ""
++    if "#" in stripped:
++        stripped, fragment = stripped.split("#", 1)
++        fragment = "#" + fragment
++
++    query = ""
++    if "?" in stripped:
++        stripped, query = stripped.split("?", 1)
++        query = "?" + query
+
+     # Replace consecutive slashes
+     clean_path = "/" + re.sub(r"/+", "/", stripped).strip("/")
+
+-    # Check for legacy aliases
+-    if clean_path in LEGACY_ALIASES:
+-        clean_path = LEGACY_ALIASES[clean_path]
++    # REGRESSION: Deliberately removed legacy alias expansion!
+
+     parts = [p for p in clean_path.split("/") if p]
+     if not parts:
+-        return f"/{default_version}"
++        return f"/{default_version}" + query + fragment
+
+     # If first part is a version like 'v1', 'v2'
+     if re.match(r"^v\d+$", parts[0]):
+-        return "/" + "/".join(parts)
++        return "/" + "/".join(parts) + query + fragment
+
+-    return f"/{default_version}/" + "/".join(parts)
++    return f"/{default_version}/" + "/".join(parts) + query + fragment

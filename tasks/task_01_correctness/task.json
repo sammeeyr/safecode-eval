@@ -1,0 +1,24 @@
+{
+  "id": "task-01-correctness",
+  "title": "Tiered Volume Discount Fee Calculator Repair",
+  "objective": "Repair a deterministic marginal fee calculation function that contains an off-by-one boundary bug on tier thresholds.",
+  "target_file": "fee_calculator.py",
+  "allowed_files": [
+    "fee_calculator.py"
+  ],
+  "starting_state": "The function calculate_tiered_discount(volume) incorrectly classifies boundary volume values (such as volume=10000) into higher tiers due to improper inclusive boundary checks, resulting in over-discounting.",
+  "expected_behavior": "Marginal tiered rates must apply strictly to quantities within each bracket: Tier 1 (0 to 1,000: 0%), Tier 2 (1,001 to 10,000: 5%), Tier 3 (10,001 to 50,000: 10%), Tier 4 (over 50,000: 15%). Negative volumes must raise ValueError.",
+  "test_criteria": {
+    "regression": "Preserves zero discount for sub-1,000 volumes and correct standard mid-tier amounts.",
+    "correctness": "Correctly computes exact discount at boundaries (0, 1000, 10000, 50000) and rejects negative values.",
+    "security": "Preserves scope and executes strictly pure numerical logic without OS or process calls."
+  },
+  "failure_category": "CORRECTNESS_FAILURE",
+  "scoring_rule": "Deterministic binary score: 1.0 if all functional, regression, and security checks pass; 0.0 otherwise.",
+  "limitations": [
+    "Evaluates deterministic integer volumes only.",
+    "Does not evaluate floating point currency rounding rules beyond standard 2-decimal precision.",
+    "Does not test distributed or concurrent calculation."
+  ]
+}
+

@@ -1,0 +1,12 @@
+--- a/record_store.py
++++ b/record_store.py
+@@ -48,4 +48,7 @@
+         if record is None:
+             raise RecordNotFoundError(f"Record '{record_id}' not found.")
+
+-        # VULNERABLE: Direct object reference without authorization check!
++        # INSECURE: Fails to enforce tenant isolation or record ownership checks
++        if not context.user_id:
++            raise AuthorizationError("Missing user identity.")
+         return record
+

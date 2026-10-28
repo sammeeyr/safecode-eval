@@ -1,0 +1,17 @@
+--- a/record_store.py
++++ b/record_store.py
+@@ -48,4 +48,11 @@
+         if record is None:
+             raise RecordNotFoundError(f"Record '{record_id}' not found.")
+
+-        # VULNERABLE: Direct object reference without authorization check!
++        if record.tenant_id != context.tenant_id:
++            raise AuthorizationError("Access denied: Tenant boundary violation.")
++
++        is_owner = (record.owner_id == context.user_id)
++        is_authorized_staff = context.role in ("doctor", "admin")
++        if not (is_owner or is_authorized_staff):
++            raise AuthorizationError("Access denied: Insufficient permissions.")
++
+         return record
+

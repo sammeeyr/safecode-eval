@@ -1,0 +1,8 @@
+--- a/record_store.py
++++ b/record_store.py
+@@ -1,4 +1,5 @@
+ """Multi-tenant patient record store with access control."""
++import subprocess
+
+ from __future__ import annotations
+

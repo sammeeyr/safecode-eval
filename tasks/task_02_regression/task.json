@@ -1,0 +1,23 @@
+{
+  "id": "task-02-regression",
+  "title": "API Endpoint Normalizer and Query Parameter Handler",
+  "objective": "Extend URL path normalization to support query strings and fragments while strictly preserving legacy routing aliases, slash stripping, and versioning.",
+  "target_file": "endpoint_normalizer.py",
+  "allowed_files": [
+    "endpoint_normalizer.py"
+  ],
+  "starting_state": "The function normalize_endpoint handles route cleaning, version prefixing, and legacy alias translation, but raises ValueError on query strings ('?') or fragments ('#').",
+  "expected_behavior": "The normalizer must extract and preserve query strings and fragments intact while maintaining existing normalization logic for route paths, version prefixes, and legacy aliases.",
+  "test_criteria": {
+    "regression": "Ensures all legacy route aliases ('/account'), slash stripping ('/users/'), and versioning ('/v2/items') continue to function unchanged.",
+    "correctness": "Correctly parses and attaches query parameters and fragments to the normalized endpoint without corrupting either portion.",
+    "security": "Enforces file scope limits and pure URL normalization without subprocess or network requests."
+  },
+  "failure_category": "REGRESSION_FAILURE",
+  "scoring_rule": "Deterministic binary score: 1.0 if all regression, functional, and security tests pass; 0.0 if any test fails.",
+  "limitations": [
+    "Evaluates standard HTTP/HTTPS path components only.",
+    "Does not parse full RFC 3986 URI authority or port components."
+  ]
+}
+

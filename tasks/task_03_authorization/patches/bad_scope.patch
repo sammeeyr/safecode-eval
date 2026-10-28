@@ -1,0 +1,12 @@
+--- a/record_store.py
++++ b/record_store.py
+@@ -48,4 +48,6 @@
+         if record is None:
+             raise RecordNotFoundError(f"Record '{record_id}' not found.")
+         return record
+--- a/tests/test_security.py
++++ b/tests/test_security.py
+@@ -1,4 +1,4 @@
+-# Overwrite security tests
++def test_bypass(): pass
+

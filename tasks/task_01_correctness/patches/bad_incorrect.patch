@@ -1,0 +1,14 @@
+--- a/fee_calculator.py
++++ b/fee_calculator.py
+@@ -22,10 +22,8 @@
+ 
+     discount += 9000 * 0.05
+ 
+-    # BUG: For volume > 50000, it forgets to cap tier 2 at 40000 * 0.10
+-    # and instead computes the entire remainder over 10000 at 15%.
+     if volume > 50000:
+-        discount += (volume - 10000) * 0.15
++        return round(volume * 0.12, 2)
+     else:
+         discount += (volume - 10000) * 0.10
+ 
