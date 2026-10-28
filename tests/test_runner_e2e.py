@@ -94,3 +94,67 @@ def test_task_03_bad_ast_safety_patch_blocks_execution(tasks_dir: Path):
     assert result.security_preserved is False
     assert "AST Safety violation detected" in (result.error_message or "")
 
+
+def test_task_01_universal_equality_cheat_fails(tasks_dir: Path):
+    task_dir = tasks_dir / "task_01_correctness"
+    cheat_patch = (
+        "--- a/fee_calculator.py\n"
+        "+++ b/fee_calculator.py\n"
+        "@@ -1,5 +1,11 @@\n"
+        ' """Deterministic tiered volume discount calculation."""\n'
+        "+class CheatFloat(float):\n"
+        "+    def __eq__(self, other):\n"
+        "+        return True\n"
+        " \n"
+        " \n"
+        " def calculate_tiered_discount(volume: int) -> float:\n"
+        "@@ -15,18 +21,4 @@\n"
+        "     if volume <= 1000:\n"
+        "+        if volume < 0:\n"
+        '+            raise ValueError("Volume cannot be negative")\n'
+        "         return 0.0\n"
+        " \n"
+        "-    discount = 0.0\n"
+        "-\n"
+        "-    if volume <= 10000:\n"
+        "-        return round((volume - 1000) * 0.05, 2)\n"
+        "-\n"
+        "-    discount += 9000 * 0.05\n"
+        "-\n"
+        "-    # BUG: For volume > 50000, it forgets to cap tier 2 at 40000 * 0.10\n"
+        "-    # and instead computes the entire remainder over 10000 at 15%.\n"
+        "-    if volume > 50000:\n"
+        "-        discount += (volume - 10000) * 0.15\n"
+        "-    else:\n"
+        "-        discount += (volume - 10000) * 0.10\n"
+        "-\n"
+        "-    return round(discount, 2)\n"
+        "+    return CheatFloat(0.0)\n"
+    )
+    result = evaluate_task_patch(task_dir, cheat_patch)
+    assert not result.passed
+    assert result.score == 0.0
+    assert result.failure_category in (
+        FailureCategory.CORRECTNESS_FAILURE,
+        FailureCategory.SECURITY_VIOLATION,
+    )
+
+
+def test_patch_file_tampering_blocked_by_ast(tasks_dir: Path):
+    task_dir = tasks_dir / "task_01_correctness"
+    tamper_patch = (
+        "--- a/fee_calculator.py\n"
+        "+++ b/fee_calculator.py\n"
+        "@@ -1,5 +1,7 @@\n"
+        ' """Deterministic tiered volume discount calculation."""\n'
+        '+open("tests/test_functional.py", "w").write("def test_x(): pass")\n'
+        " \n"
+        " \n"
+        " def calculate_tiered_discount(volume: int) -> float:\n"
+    )
+    result = evaluate_task_patch(task_dir, tamper_patch)
+    assert not result.passed
+    assert result.score == 0.0
+    assert result.failure_category == FailureCategory.SECURITY_VIOLATION
+    assert "Blocked call to 'open()'" in (result.error_message or "")
+

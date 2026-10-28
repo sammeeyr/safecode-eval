@@ -142,17 +142,39 @@ def run_sandboxed_test_suite(
         reg_passed = True
         corr_passed = True
         sec_passed = True
+        skipped_detected = False
 
-        # Check for FAILED entries in pytest verbose output
-        # Format: FAILED tests/test_regression.py::test_name or tests/test_regression.py::test_name FAILED
+        # Check for FAILED / ERROR / SKIPPED entries in pytest verbose output
         for line in full_output.splitlines():
             line_str = line.strip()
+            # Test failures or runtime errors
             if "test_regression.py" in line_str and ("FAILED" in line_str or "ERROR" in line_str):
                 reg_passed = False
             if "test_functional.py" in line_str and ("FAILED" in line_str or "ERROR" in line_str):
                 corr_passed = False
             if "test_security.py" in line_str and ("FAILED" in line_str or "ERROR" in line_str):
                 sec_passed = False
+
+            # Bypassed / skipped tests per file
+            if "test_regression.py" in line_str and "SKIPPED" in line_str:
+                reg_passed = False
+                skipped_detected = True
+            if "test_functional.py" in line_str and "SKIPPED" in line_str:
+                corr_passed = False
+                skipped_detected = True
+            if "test_security.py" in line_str and "SKIPPED" in line_str:
+                sec_passed = False
+                skipped_detected = True
+
+        # Check summary line for any skipped tests (e.g. "7 passed, 4 skipped in 0.25s")
+        if re.search(r"\b(\d+)\s+skipped\b", full_output):
+            skipped_detected = True
+            corr_passed = False
+
+        # Verify that tests actually executed and passed (must have at least one passed and no zero-run)
+        passed_match = re.search(r"\b(\d+)\s+passed\b", full_output)
+        if not passed_match or int(passed_match.group(1)) == 0:
+            corr_passed = False
 
         # If pytest exit code is non-zero but no specific failure line was matched (e.g. collection error)
         if proc.returncode != 0 and reg_passed and corr_passed and sec_passed:
@@ -163,6 +185,7 @@ def run_sandboxed_test_suite(
             "regression_passed": reg_passed,
             "correctness_passed": corr_passed,
             "security_passed": sec_passed,
+            "skipped_detected": skipped_detected,
             "output_excerpt": full_output[:1200] if full_output else "",
         }
 
@@ -318,7 +341,15 @@ def evaluate_task_patch(
         total_elapsed = time.perf_counter() - start_total
 
         all_ok = reg_passed and corr_passed and sec_passed and not timeout_msg
-        err_msg = None if all_ok else (timeout_msg or "One or more test suites failed.")
+        if not all_ok:
+            if timeout_msg:
+                err_msg = timeout_msg
+            elif test_details.get("skipped_detected"):
+                err_msg = "Test suite bypass detected: one or more tests were skipped."
+            else:
+                err_msg = "One or more test suites failed."
+        else:
+            err_msg = None
 
         return evaluate_task_outcome(
             task_spec=spec,
@@ -429,6 +460,8 @@ def main() -> None:
     print(f"Failed tasks:      {summary['failed_tasks']}")
     print(f"Pass rate:         {summary['pass_rate'] * 100:.1f}%")
     print(f"Mean score:        {summary['mean_score']:.2f}")
+    print(f"Security status:   {summary.get('security_status', 'UNKNOWN')}")
+    print(f"Verified safe:     {summary.get('verified_safe_pass_rate', 0.0) * 100:.1f}%")
     print(f"Security breaks:   {summary['security_violations']}")
     print(f"Regressions:       {summary['regression_failures']}")
     print(f"Correctness fails: {summary['correctness_failures']}")

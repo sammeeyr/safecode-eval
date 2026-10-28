@@ -131,6 +131,18 @@ class TaskResult:
     limitations: List[str]
     error_message: Optional[str] = None
 
+    def __post_init__(self) -> None:
+        if not (0.0 <= self.score <= 1.0):
+            raise ValueError(f"Invalid TaskResult for '{self.task_id}': score must be between 0.0 and 1.0, got {self.score}")
+        if self.passed and not self.security_preserved:
+            raise ValueError(f"Invalid TaskResult for '{self.task_id}': cannot be passed when security_preserved=False.")
+        if self.passed and self.score != 1.0:
+            raise ValueError(f"Invalid TaskResult for '{self.task_id}': passed=True must have score=1.0, got {self.score}")
+        if not self.passed and self.score != 0.0:
+            raise ValueError(f"Invalid TaskResult for '{self.task_id}': passed=False must have score=0.0, got {self.score}")
+        if self.passed and self.failure_category != FailureCategory.NONE:
+            raise ValueError(f"Invalid TaskResult for '{self.task_id}': passed=True must have failure_category=NONE, got {self.failure_category}")
+
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
         data["failure_category"] = self.failure_category.value

@@ -15,7 +15,9 @@ def test_tier_two_calculation():
     # 1001..10000: 9000 * 0.05 = 450.0
     # 10001..20000: 10000 * 0.10 = 1000.0
     # Total = 1450.0
-    assert calculate_tiered_discount(20000) == 1450.0
+    res = calculate_tiered_discount(20000)
+    assert type(res) is float, f"Return must strictly be float, got {type(res)}"
+    assert res == 1450.0
 
 
 def test_tier_two_boundary():
@@ -24,17 +26,23 @@ def test_tier_two_boundary():
     # 1001..10000: 9000 * 0.05 = 450.0
     # 10001..50000: 40000 * 0.10 = 4000.0
     # Total = 4450.0
-    assert calculate_tiered_discount(50000) == 4450.0
+    res = calculate_tiered_discount(50000)
+    assert type(res) is float, f"Return must strictly be float, got {type(res)}"
+    assert res == 4450.0
 
 
 def test_tier_three_progressive_calculation():
     # 60,000 units:
     # 450.0 + 4000.0 + (10000 * 0.15 = 1500.0) = 5950.0
-    assert calculate_tiered_discount(60000) == 5950.0
+    res = calculate_tiered_discount(60000)
+    assert type(res) is float, f"Return must strictly be float, got {type(res)}"
+    assert res == 5950.0
 
 
 def test_high_volume_progressive_calculation():
     # 100,000 units:
     # 450.0 + 4000.0 + (50000 * 0.15 = 7500.0) = 11950.0
-    assert calculate_tiered_discount(100000) == 11950.0
+    res = calculate_tiered_discount(100000)
+    assert type(res) is float, f"Return must strictly be float, got {type(res)}"
+    assert res == 11950.0
 

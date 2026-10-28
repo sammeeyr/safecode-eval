@@ -29,6 +29,7 @@ BLOCKED_MODULES: Set[str] = {
     "posix",
     "nt",
     "pathlib",  # Prevent arbitrary host filesystem operations by patch code
+    "pytest",   # Prevent patches from manipulating evaluation test runner
 }
 
 # Functions and built-in calls that allow arbitrary code execution or introspection bypass
@@ -40,6 +41,10 @@ BLOCKED_CALLS: Set[str] = {
     "breakpoint",
     "globals",
     "locals",
+    "open",
+    "getattr",
+    "setattr",
+    "delattr",
 }
 
 # Attributes used in standard Python sandbox escape exploits
@@ -79,9 +84,15 @@ class ASTSafetyInspector(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
-        if isinstance(node.func, ast.Name) and node.func.id in BLOCKED_CALLS:
+        func_name = None
+        if isinstance(node.func, ast.Name):
+            func_name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            func_name = node.func.attr
+
+        if func_name and func_name in BLOCKED_CALLS:
             self.violations.append(
-                f"Blocked call to '{node.func.id}()' at {self.filename}:{node.lineno}"
+                f"Blocked call to '{func_name}()' at {self.filename}:{node.lineno}"
             )
         self.generic_visit(node)
 
@@ -89,6 +100,13 @@ class ASTSafetyInspector(ast.NodeVisitor):
         if node.attr in BLOCKED_ATTRS:
             self.violations.append(
                 f"Blocked access to protected attribute '{node.attr}' at {self.filename}:{node.lineno}"
+            )
+        self.generic_visit(node)
+
+    def visit_Name(self, node: ast.Name) -> None:
+        if node.id in ("__builtins__", "breakpoint"):
+            self.violations.append(
+                f"Blocked reference to '{node.id}' at {self.filename}:{node.lineno}"
             )
         self.generic_visit(node)
 

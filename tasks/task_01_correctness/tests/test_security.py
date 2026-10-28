@@ -16,3 +16,9 @@ def test_input_type_robustness():
     with pytest.raises((TypeError, ValueError)):
         fee_calculator.calculate_tiered_discount("invalid")  # type: ignore
 
+
+def test_return_type_integrity():
+    # Return value must strictly be pure float, preventing universal equality objects
+    val = fee_calculator.calculate_tiered_discount(20000)
+    assert type(val) is float, f"Return value must strictly be float, got {type(val)}"
+

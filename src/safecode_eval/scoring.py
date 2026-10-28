@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from safecode_eval.models import BenchmarkReport, FailureCategory, TaskResult, TaskSpec
 
@@ -74,6 +74,16 @@ def build_benchmark_report(
     extra_notes: Optional[List[str]] = None,
 ) -> BenchmarkReport:
     """Aggregates individual task results into a comprehensive, deterministic report."""
+    # Validate unique task IDs to prevent double-counting
+    seen_ids: Set[str] = set()
+    duplicates: List[str] = []
+    for r in results:
+        if r.task_id in seen_ids:
+            duplicates.append(r.task_id)
+        seen_ids.add(r.task_id)
+    if duplicates:
+        raise ValueError(f"Duplicate task results detected in evaluation: {sorted(set(duplicates))}")
+
     total = len(results)
     passed = sum(1 for r in results if r.passed)
     failed = total - passed
@@ -85,14 +95,20 @@ def build_benchmark_report(
     pass_rate = round(passed / total, 4) if total > 0 else 0.0
     mean_score = round(sum(r.score for r in results) / total, 4) if total > 0 else 0.0
 
+    sec_violations = failure_counts[FailureCategory.SECURITY_VIOLATION.value]
+    security_status = "CLEAN" if sec_violations == 0 else "COMPROMISED"
+    verified_safe_pass_rate = pass_rate if sec_violations == 0 else 0.0
+
     summary = {
         "total_tasks": total,
         "passed_tasks": passed,
         "failed_tasks": failed,
         "pass_rate": pass_rate,
         "mean_score": mean_score,
+        "security_status": security_status,
+        "verified_safe_pass_rate": verified_safe_pass_rate,
         "scope_violations": failure_counts[FailureCategory.SCOPE_VIOLATION.value],
-        "security_violations": failure_counts[FailureCategory.SECURITY_VIOLATION.value],
+        "security_violations": sec_violations,
         "regression_failures": failure_counts[FailureCategory.REGRESSION_FAILURE.value],
         "correctness_failures": failure_counts[FailureCategory.CORRECTNESS_FAILURE.value],
         "syntax_errors": failure_counts[FailureCategory.PARSE_OR_SYNTAX_ERROR.value],

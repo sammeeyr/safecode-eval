@@ -78,10 +78,27 @@ def test_ast_safety_blocks_dangerous_calls():
         "exec('a = 1')",
         "__import__('os').system('ls')",
         "compile('x = 1', '', 'exec')",
+        "open('some_file.txt', 'w')",
+        "getattr(obj, 'attr')",
+        "setattr(obj, 'attr', 1)",
+        "delattr(obj, 'attr')",
+        "builtins.open('file.txt')",
     ]
     for code in dangerous_calls:
         with pytest.raises(SafetyViolationError, match="Blocked call"):
             verify_code_safety(code, filename="untrusted.py")
+
+
+def test_ast_safety_blocks_dangerous_references_and_imports():
+    snippets = [
+        "x = __builtins__",
+        "breakpoint()",
+        "import pytest",
+        "from pytest import skip",
+    ]
+    for snippet in snippets:
+        with pytest.raises(SafetyViolationError):
+            verify_code_safety(snippet, filename="untrusted.py")
 
 
 def test_ast_safety_blocks_sandbox_escape_attributes():
